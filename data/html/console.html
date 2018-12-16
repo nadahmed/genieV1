@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Console for ESP</title>
+    <style>
+
+    textarea {
+    resize: none;
+    width:800px;
+    background-color: #2e3b4c;
+    color:#EFEF10;
+
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: 80% 0px 10% 10%;
+      grid-gap: 1px;
+      padding: 1px;
+      width: 800px;
+    }
+
+    </style>
+</head>
+<body>
+    <textarea readonly id="console-log" cols="100" rows="20" charswidth="23"></textarea><br/>
+    <div class="grid-container">
+        <input id="console-message-input" width = "200px" type="text"/><br/>
+        <input id="console-message-submit" type="button" value="Send"/>
+        <input id="console-clear-message" type="button" value="Clear"/>
+    </div>
+    <input id="switch-1" type="button" value="Switch 1"/>
+    <input id="switch-2" type="button" value="Switch 2"/>
+    <input id="switch-3" type="button" value="Switch 3"/>
+    <input id="switch-4" type="button" value="Switch 4"/>
+</body>
+<script>
+    onload= document.getElementById('console-message-input').value='';
+    //roomName = 'this'
+    var username = "noorz@gmail.com";
+    var password = "noor9479";
+    var encodedToken = btoa(username+":"+password);
+    var consoleSocket = new WebSocket(
+        //'ws://' + username+":"+password+"@"+'192.168.0.67' + '/ws');
+        'ws://' + window.location.host + '/ws');
+
+    consoleSocket.onmessage = function(e) {
+        console.log(e.data);
+        var data = JSON.parse(e.data);
+        var message = JSON.stringify(data['message']);
+        var textarea = document.getElementById('console-log');
+        textarea.scrollTop = textarea.scrollHeight;
+        document.querySelector('#console-log').value += (message + '\n');
+
+    };
+
+    consoleSocket.onclose = function(e) {
+        console.error('Console socket closed unexpectedly');
+    };
+
+    document.querySelector('#console-message-input').focus();
+    document.querySelector('#console-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#console-message-submit').click();
+        }
+    };
+
+
+    document.querySelector('#console-message-submit').onclick = function(e) {
+        var messageInputDom = document.querySelector('#console-message-input');
+        var message = messageInputDom.value;
+        consoleSocket.send(JSON.stringify({
+            'message': message
+        }));
+
+        messageInputDom.value = '';
+
+    };
+    var state0 =false;
+    var state1 =false;
+    var state2 =false;
+    var state3 =false;
+
+    document.querySelector('#switch-1').onclick = function(e) {
+        state0=!state0;
+        var message = JSON.stringify( {"rtss":{"id":0,"enabled":true,"isOn":state0,"phaseControl":false,"power" : 100}});
+        consoleSocket.send(JSON.stringify({
+            'message': message
+        }));
+    };
+
+    document.querySelector('#switch-2').onclick = function(e) {
+      state1=!state1;
+        var message = JSON.stringify( {"rtss":{"id":1,"enabled":true,"isOn":state1,"phaseControl":false,"power" : 100}});
+        consoleSocket.send(JSON.stringify({
+            'message': message
+        }));
+    };
+
+    document.querySelector('#switch-3').onclick = function(e) {
+      state2=!state2;
+        var message = JSON.stringify({"rtss":{"id":2,"enabled":true,"isOn":state2,"phaseControl":false,"power" : 100}});
+        consoleSocket.send(JSON.stringify({
+            'message': message
+        }));
+    };
+
+    document.querySelector('#switch-4').onclick = function(e) {
+      state3=!state3;
+        var message = JSON.stringify({"rtss":{"id":3,"enabled":true,"isOn":state3,"phaseControl":false,"power" : 100}});
+        consoleSocket.send(JSON.stringify({
+            'message': message
+        }));
+    };
+
+
+    document.querySelector('#console-clear-message').onclick = function(e) {
+        var messageInputDom = document.querySelector('#console-message-input');
+        var message = messageInputDom.value;
+        messageInputDom.value = '';
+        onload= document.getElementById('console-log').value='';
+    };
+</script>
+</html>
